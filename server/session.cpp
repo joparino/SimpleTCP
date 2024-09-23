@@ -3,7 +3,7 @@
 
 #include "session.h"
 
-jp::Session::Session(ip::tcp::socket socket, Logger& logger):
+jp::Session::Session(ip::tcp::socket socket, std::shared_ptr<Logger> logger):
 	m_socket(std::move(socket)),
 	m_logger(logger)
 {}
@@ -13,7 +13,7 @@ void jp::Session::run()
 {
     while (m_running)
     {
-        m_logger.log(read());
+        m_logger->log(read());
     }
 }
 

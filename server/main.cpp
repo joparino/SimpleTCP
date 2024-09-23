@@ -10,10 +10,16 @@ int main(int argc, char* argv[])
         return 0;
     }
 
-    const int port{ std::stoi(argv[1]) };
-
-    jp::Server server{ port };
-    server.run_forever();
+    try
+    {
+        jp::Server server{ std::stoi(argv[1]) };
+        server.run_forever();
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << "Exception: " << e.what() << std::endl;
+        return 1;
+    }
 
     return 0;
 }

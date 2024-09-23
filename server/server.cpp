@@ -27,8 +27,7 @@ void jp::Server::run_forever()
             }
 
             std::shared_ptr<Session> session{ new Session(std::move(sock), m_logger) };
-            //std::thread(std::bind(&Session::run, session.get())).detach();
-            std::thread([session](){ session->run(); }).detach();
+            std::thread([this, session]() { session->run(); }).detach();
 
             m_sessions.push_back(std::move(session));
         }

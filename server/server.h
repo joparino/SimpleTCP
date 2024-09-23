@@ -4,6 +4,7 @@
 #include <list>
 #include <thread>
 #include <boost/asio.hpp>
+#include <semaphore>
 
 #include "session.h"
 
@@ -15,6 +16,7 @@ namespace jp
 	#else
 		const unsigned numThread{ std::thread::hardware_concurrency() };
 	#endif
+
 
 	class Server
 	{
@@ -29,7 +31,7 @@ namespace jp
 	private:
 		io_context m_context{};
 		tcp::acceptor m_acceptor;
-		Logger m_logger{};
+		std::shared_ptr<Logger> m_logger{};
 		std::vector<std::shared_ptr<Session>> m_sessions{};
 	};
 }

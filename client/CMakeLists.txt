@@ -1,4 +1,3 @@
-
 cmake_minimum_required (VERSION 3.8)
 
 set(Boost_USE_STATIC_LIBS ON)
@@ -6,7 +5,6 @@ set(Boost_USE_DEBUG_LIBS OFF)
 set(Boost_USE_RELEASE_LIBS ON)
 set(Boost_USE_MULTITHREADED ON)
 
-cmake_policy(SET CMP0167 NEW)
 
 find_package(Boost REQUIRED COMPONENTS system)
 
