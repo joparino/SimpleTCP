@@ -1,16 +1,16 @@
 #pragma once
 
 #include <memory>
-#include <list>
+#include <vector>
 #include <thread>
-#include <boost/asio.hpp>
 #include <semaphore>
 
 #include "session.h"
 
 namespace jp
 {
-	constexpr std::chrono::seconds timeSleep{ 5 };
+	constexpr int timeSleep{ 60 };
+	constexpr std::chrono::seconds timeSleepThread{ 5 };
 	#ifdef DEBUG
 		const unsigned numThread{ 2 };
 	#else
@@ -27,11 +27,13 @@ namespace jp
 
 	private:
 		void check_sessions();
+		void set_socket_timeout(int sec);
+		static void handle_signal(int signal);
 
 	private:
-		io_context m_context{};
-		tcp::acceptor m_acceptor;
-		std::shared_ptr<Logger> m_logger{};
+		int m_server{};
+		std::shared_ptr<Logger> m_logger{ new Logger() };
 		std::vector<std::shared_ptr<Session>> m_sessions{};
+		static bool m_stop;
 	};
 }

@@ -1,12 +1,9 @@
 #pragma once
 
-#include <boost/asio.hpp>
+#include <chrono>
 
 namespace jp
 {
-    using namespace boost::asio;
-    using ip::tcp;
-
     class Client {
     public:
         Client(const std::string& clientName, int port, std::chrono::seconds delay);
@@ -14,14 +11,14 @@ namespace jp
         void run();
 
     private:
-        void connect();
-    
+        void connect_to_server();
+        static void handle_signal(int signal);
+
     private:
         std::string m_name{};
         int m_port{};
         std::chrono::seconds m_delay{};
-        io_context m_context;
-        tcp::socket m_socket;
-        boost::system::error_code m_error{};
+        int m_socket;
+        static bool m_running;
     };
 }

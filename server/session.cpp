@@ -1,10 +1,13 @@
 #include <chrono>
 #include <iostream>
+#include <unistd.h>
+#include <cstring>
+#include <sys/socket.h>
 
 #include "session.h"
 
-jp::Session::Session(ip::tcp::socket socket, std::shared_ptr<Logger> logger):
-	m_socket(std::move(socket)),
+jp::Session::Session(int socket, std::shared_ptr<Logger> logger):
+	m_socket(socket),
 	m_logger(logger)
 {}
 
@@ -26,13 +29,14 @@ bool jp::Session::is_running() const
 
 std::string jp::Session::read()
 {
-    m_buffer.consume(m_buffer.size());
-    read_until(m_socket, m_buffer, "\n", m_error);
-    if (m_error)
+    char buffer[1024];
+    std::size_t bytesRead = recv(m_socket, buffer, sizeof(buffer) - 1, 0);
+    if (bytesRead <= 0)
     {
-        std::cerr << "Error in session: " << m_error.what() << "\n";
+        std::cerr << "Error in session: " << (bytesRead < 0 ? strerror(errno) : "Connection closed") << "\n";
         m_running = false;
         return "";
     }
-    return buffer_cast<const char*>(m_buffer.data());
+    buffer[bytesRead] = '\0';
+    return std::string(buffer);
 }
