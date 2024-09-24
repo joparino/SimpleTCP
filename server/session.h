@@ -19,5 +19,6 @@ namespace jp
         bool m_running{ true };
         int m_socket;
         std::shared_ptr<Logger> m_logger;
+        std::array<char, 1024> m_buffer{};
     };
 }

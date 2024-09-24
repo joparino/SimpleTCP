@@ -25,14 +25,14 @@ jp::Server::Server(int port)
         throw std::runtime_error("Failed to create socket: " + std::string(strerror(errno)));
     }
 
-    set_socket_timeout(timeSleep);
+    set_socket_timeout(timeAwaitAccept);
 
-    sockaddr_in serverAddr{};
-    serverAddr.sin_family = AF_INET;
-    serverAddr.sin_addr.s_addr = INADDR_ANY;
-    serverAddr.sin_port = htons(port);
+    sockaddr_in server_addr{};
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = INADDR_ANY;
+    server_addr.sin_port = htons(port);
 
-    if (bind(m_server, reinterpret_cast<sockaddr*>(&serverAddr), sizeof(serverAddr)) < 0) 
+    if (bind(m_server, reinterpret_cast<sockaddr*>(&server_addr), sizeof(server_addr)) < 0) 
     {
         close(m_server);
         throw std::runtime_error("Binding failed: " + std::string(strerror(errno)));

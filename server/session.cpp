@@ -29,14 +29,15 @@ bool jp::Session::is_running() const
 
 std::string jp::Session::read()
 {
-    char buffer[1024];
-    std::size_t bytesRead = recv(m_socket, buffer, sizeof(buffer) - 1, 0);
-    if (bytesRead <= 0)
+    std::size_t bytes_read = recv(m_socket, m_buffer.data(), m_buffer.size(), 0);
+    if (bytes_read <= 0)
     {
-        std::cerr << "Error in session: " << (bytesRead < 0 ? strerror(errno) : "Connection closed") << "\n";
+        std::cerr << "Error in session: " << (bytes_read < 0 ? strerror(errno) : "Connection closed") << "\n";
         m_running = false;
         return "";
     }
-    buffer[bytesRead] = '\0';
-    return std::string(buffer);
+    #ifdef DEBUG
+        std::cerr << "Handled message:\n" << std::string(m_buffer.data(), bytes_read);
+    #endif
+    return std::string(m_buffer.data(), bytes_read);
 }

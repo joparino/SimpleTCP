@@ -9,10 +9,10 @@
 
 namespace jp
 {
-	constexpr int timeSleep{ 60 };
+	constexpr int timeAwaitAccept{ 10 };
 	constexpr std::chrono::seconds timeSleepThread{ 5 };
 	#ifdef DEBUG
-		const unsigned numThread{ 2 };
+		constexpr unsigned numThread{ 2 };
 	#else
 		const unsigned numThread{ std::thread::hardware_concurrency() };
 	#endif
