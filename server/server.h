@@ -13,7 +13,7 @@ namespace jp
 	#ifdef DEBUG
 		constexpr unsigned numThread{ 2 };
 	#else
-		const unsigned numThread{ std::thread::hardware_concurrency() };
+		const unsigned numThread{ std::thread::hardware_concurrency() - 1ul };
 	#endif
 
 	class Server

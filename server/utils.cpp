@@ -5,5 +5,5 @@
 
 void jp::log_error(const std::string& message)
 {
-		std::cerr << message << ": " << std::strerror(errno) << "\n";
+	std::cerr << message << ": " << std::strerror(errno) << "\n";
 }

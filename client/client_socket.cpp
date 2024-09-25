@@ -29,13 +29,13 @@ void jp::ClientSocket::connect_to_server(int port)
 	server_addr.sin_port = htons(port);
 	if (inet_pton(AF_INET, "127.0.0.1", &server_addr.sin_addr) <= 0) 
 	{
-		close(m_socket);
+		close_socket();
 		throw std::runtime_error("Invalid server address.");
 	}
 
 	if (connect(m_socket, reinterpret_cast<sockaddr*>(&server_addr), sizeof(server_addr)) < 0) 
 	{
-		close(m_socket);
+		close_socket();
 		throw std::runtime_error("Failed to connect to the server.");
 	}
 }

@@ -3,6 +3,17 @@
 #include "socket.h"
 #include "utils.h"
 
+
+jp::Socket::Socket(int domain, int type, int protocol)
+{
+    m_socket = socket(domain, type, protocol);
+    if (m_socket < 0)
+    {
+        throw std::runtime_error("Failed to create socket");
+    }
+}
+
+
 jp::Socket::Socket(int socket)
 {
 	m_socket = socket;

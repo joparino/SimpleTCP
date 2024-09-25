@@ -6,12 +6,8 @@
 #include "server_socket.h"
 
 jp::ServerSocket::ServerSocket(int port):
-    Socket(socket(AF_INET, SOCK_STREAM, 0))
+    Socket(AF_INET, SOCK_STREAM, 0)
 {
-    if (m_socket < 0) 
-    {
-        throw std::runtime_error("Failed to create socket");
-    }
     bind(port);
     listen();
 }

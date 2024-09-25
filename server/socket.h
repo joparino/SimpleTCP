@@ -11,6 +11,7 @@ namespace jp
     class Socket
     {
     public:
+        Socket(int domain, int type, int protocol);
         Socket(int socket);
         Socket(Socket&& other);
         virtual ~Socket();
@@ -27,9 +28,9 @@ namespace jp
         virtual std::size_t read(std::array<char, 1024>& buffer);
 
         /**
-         * close_socket - Closes the socket if it is open, ensuring the descriptor is
-         * invalidated after closing.
-         */
+        * close_socket - Closes the socket if it is open, ensuring the descriptor is
+        * invalidated after closing.
+        */
         virtual void close_socket();
 
         /**
