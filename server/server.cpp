@@ -1,73 +1,59 @@
 #include <iostream>
 #include <functional>
 #include <unistd.h>
-#include <cstring>
 #include <csignal>
-#include <sys/socket.h>
-#include <netinet/in.h>
+#include <cstring>
 
 #include "server.h"
+#include "utils.h"
 
-bool jp::Server::m_stop{ false };
+bool jp::Server::m_running{ true };
 
 void jp::Server::handle_signal(int signal) 
 {
-    m_stop = true;
+    m_running = false;
 }
 
-jp::Server::Server(int port)
+
+jp::Server::Server(int port):
+    m_server_socket(port)
 {
     std::signal(SIGINT, handle_signal);
+}
 
-    m_server = socket(AF_INET, SOCK_STREAM, 0);
-    if (m_server < 0) 
+
+jp::Server::~Server()
+{
+    for (const auto& session : m_sessions)
     {
-        throw std::runtime_error("Failed to create socket: " + std::string(strerror(errno)));
+        session->stop();
     }
-
-    set_socket_timeout(timeAwaitAccept);
-
-    sockaddr_in server_addr{};
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_addr.s_addr = INADDR_ANY;
-    server_addr.sin_port = htons(port);
-
-    if (bind(m_server, reinterpret_cast<sockaddr*>(&server_addr), sizeof(server_addr)) < 0) 
-    {
-        close(m_server);
-        throw std::runtime_error("Binding failed: " + std::string(strerror(errno)));
-    }
-
-    if (listen(m_server, SOMAXCONN) < 0)
-    {
-        close(m_server);
-        throw std::runtime_error("Listen failed: " + std::string(strerror(errno)));
-    }
+    std::cout << "Shutting down server..." << std::endl;
+    m_server_socket.close_socket();
 }
 
 
 void jp::Server::run_forever()
 {
-    while (!m_stop)
+    while (m_running)
     {
-        std::cerr << "Sessions num " << m_sessions.size() << std::endl;
+        #ifdef DEBUG
+            std::cerr << "Sessions num " << m_sessions.size() << std::endl;
+        #endif
         if (m_sessions.size() < numThread) [[likely]]
         {
-            int socket = accept(m_server, nullptr, nullptr);
-            if (socket < 0)
+            Socket socket{ m_server_socket.accept() };
+            if (socket.get_socket() < 0)
             {
-                if (errno == EAGAIN || errno == EWOULDBLOCK) 
+                if (errno == EAGAIN || errno == EWOULDBLOCK || errno == 0) 
                 {
                     continue;
                 }
-                std::cerr << "Error on accepting socket: " << strerror(errno) << "\n";
+                log_error("Error on accepting socket");
                 continue;
             }
 
-            std::shared_ptr<Session> session{ new Session(socket, m_logger) };
-            std::thread([this, session]() { session->run(); }).detach();
-
-            m_sessions.push_back(std::move(session));
+            start_session_thread(std::move(socket));
         }
         else [[unlikely]]
         {
@@ -75,25 +61,20 @@ void jp::Server::run_forever()
             std::this_thread::sleep_for(timeSleepThread);
         }
     }
+}
 
-    std::cout << "Shutting down server...\n";
-    close(m_server);
+
+void jp::Server::start_session_thread(Socket socket)
+{
+    std::shared_ptr<Session> session{ new Session(std::move(socket), m_logger) };
+    std::thread([session]() { session->run(); }).detach();
+    m_sessions.push_back(session);
 }
 
 
 void jp::Server::check_sessions()
 {
-    std::erase_if(m_sessions, [&](const std::shared_ptr<Session>& session) {
+    std::erase_if(m_sessions, [](const auto& session) {
         return !session->is_running();
     });
-}
-
-
-void jp::Server::set_socket_timeout(int seconds)
-{
-    struct timeval tv;
-    tv.tv_sec = seconds;
-    tv.tv_usec = 0;
-
-    setsockopt(m_server, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
 }

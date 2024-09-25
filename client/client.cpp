@@ -2,12 +2,9 @@
 #include <format>
 #include <thread>
 #include <csignal>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <cstring>
 
 #include "client.h"
+#include "utils.h"
 
 bool jp::Client::m_running{ true };
 
@@ -16,14 +13,16 @@ void jp::Client::handle_signal(int signal)
     m_running = false;
 }
 
+
 jp::Client::Client(const std::string& client, int port, std::chrono::seconds delay):
     m_name(client),
     m_port(port), 
-    m_delay(delay)
+    m_delay(delay),
+    m_socket(port)
 {
-    connect_to_server();
     std::signal(SIGINT, handle_signal);
 }
+
 
 void jp::Client::run() 
 {
@@ -31,40 +30,27 @@ void jp::Client::run()
     std::size_t sent{};
     while (m_running) 
     {
-        std::chrono::time_point<std::chrono::system_clock> time_now = std::chrono::system_clock::now();
-        msg = std::format("[{0:%F} {0:%T}] {1}\n", time_now, m_name);
+        if (!m_socket.is_alive())
+        {
+            break;
+        }
 
-        sent = send(m_socket, msg.c_str(), msg.size(), 0);
         msg.clear();
+        msg = create_message();
+        sent = m_socket.send_message(msg);
         if (sent < 0) 
         {
-            std::cerr << "Send failed: " << strerror(errno) << "\n";
+            log_error("Send failed: ");
             break;
         }
 
         std::this_thread::sleep_for(m_delay);
     }
-    close(m_socket);
-    std::cout << "Client stopped.\n";
 }
 
-void jp::Client::connect_to_server() 
+
+std::string jp::Client::create_message()
 {
-    m_socket = socket(AF_INET, SOCK_STREAM, 0);
-    if (m_socket < 0)
-    {
-        std::cerr << "Error creating socket: " << strerror(errno) << "\n";
-        throw std::runtime_error("Failed to create socket.");
-    }
-
-    sockaddr_in server_addr{};
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(m_port);
-    inet_pton(AF_INET, "127.0.0.1", &server_addr.sin_addr);
-
-    if (connect(m_socket, reinterpret_cast<sockaddr*>(&server_addr), sizeof(server_addr)) < 0)
-    {
-        std::cerr << "Error connecting to server: " << strerror(errno) << "\n";
-        throw std::runtime_error("Failed to connect to the server.");
-    }
+    std::chrono::time_point<std::chrono::system_clock> time_now = std::chrono::system_clock::now();
+    return std::format("[{0:%F} {0:%T}] {1}\n", time_now, m_name);
 }

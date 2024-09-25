@@ -11,6 +11,10 @@ namespace jp
 		Logger();
 		~Logger();
 
+		/**
+	 	* log - Writes a log message to the log file with thread safety.
+		* @msg: The message to be logged.
+		*/
 		void log(const std::string& msg);
 
 	private:

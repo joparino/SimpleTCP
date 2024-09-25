@@ -14,7 +14,7 @@ add_compile_definitions(
 
 project (client)
 
-add_executable (client "main.cpp" "client.cpp" "client.h")
+add_executable (client "main.cpp" "client.cpp" "utils.cpp" "client_socket.cpp")
 
 target_include_directories(client PUBLIC
     ${Boost_INCLUDE_DIRS}

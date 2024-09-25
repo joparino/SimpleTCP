@@ -7,7 +7,7 @@ jp::Logger::Logger()
 	m_logFile.open("log.txt", std::ios::binary);
 	if (!m_logFile.is_open())
 	{
-		std::cerr << "Cannot open file\n";
+		throw std::runtime_error("Cannot open log file");
 	}
 }
 

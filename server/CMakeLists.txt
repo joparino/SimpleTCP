@@ -15,7 +15,7 @@ add_compile_definitions(
 
 project (server)
 
-add_executable (server "main.cpp" "server.h" "server.cpp" "session.h" "session.cpp" "logger.h" "logger.cpp")
+add_executable (server "main.cpp" "server.cpp" "session.cpp" "logger.cpp" "socket.cpp" "server_socket.cpp" "utils.cpp")
 
 target_include_directories(server PUBLIC
     ${Boost_INCLUDE_DIRS}
